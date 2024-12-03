@@ -1,0 +1,99 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: luislemus
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: aws-easyreserves-backend
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  environment:
+      ACTIVITIES_TABLE: Activities
+      RESERVATIONS_TABLE: Reservations
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:us-east-1:590183865524:table/Reservations
+        - arn:aws:dynamodb:us-east-1:590183865524:table/Activities
+
+functions:
+  createActivity:
+    handler: functions/createActivity.handler
+    events:
+      - http:
+          path: activities
+          method: post
+          cors: true
+
+  listActivities:
+    handler: functions/listActivities.handler
+    events:
+      - http:
+          path: activities
+          method: get
+          cors: true
+
+  createReservation:
+    handler: functions/createReservation.handler
+    events:
+      - http:
+          path: reserve
+          method: post
+          cors: true
+
+  listReservations:
+    handler: functions/listReservations.handler
+    events:
+      - http:
+          path: reservations
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    ActivitiesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Activities
+        AttributeDefinitions:
+          - AttributeName: activityId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: activityId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+    ReservationsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Reservations
+        AttributeDefinitions:
+          - AttributeName: reservationId
+            AttributeType: S
+          - AttributeName: activityId
+            AttributeType: S
+          - AttributeName: reservationDate
+            AttributeType: S
+        KeySchema:
+          - AttributeName: reservationId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: activityId-index
+            KeySchema:
+              - AttributeName: activityId
+                KeyType: HASH
+              - AttributeName: reservationDate
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
