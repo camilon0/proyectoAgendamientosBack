@@ -17,6 +17,7 @@ provider:
       Resource:
         - arn:aws:dynamodb:us-east-1:590183865524:table/Reservations
         - arn:aws:dynamodb:us-east-1:590183865524:table/Activities
+        - arn:aws:dynamodb:us-east-1:590183865524:table/Reservations/index/activityId-index
 
 functions:
   createActivity:
@@ -25,6 +26,22 @@ functions:
       - http:
           path: activities
           method: post
+          cors: true
+
+  editActivity:
+    handler: functions/editActivity.handler
+    events:
+      - http:
+          path: activities/{activityId}
+          method: put
+          cors: true
+
+  deleteActivity:
+    handler: functions/deleteActivity.handler
+    events:
+      - http:
+          path: activities/{activityId}
+          method: delete
           cors: true
 
   listActivities:
@@ -39,7 +56,7 @@ functions:
     handler: functions/createReservation.handler
     events:
       - http:
-          path: reservation
+          path: reservations
           method: post
           cors: true
 
