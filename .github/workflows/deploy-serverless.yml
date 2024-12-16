@@ -1,9 +1,10 @@
 name: Deploy Backend to AWS with Serverless
 
 on:
-  push:
-    branches:
-      - main # Se ejecuta cuando se hace push a la rama main
+  #push:
+   # branches:
+    #  - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -11,35 +12,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout del código fuente
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Configuración de Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Asegúrate de usar la versión que necesitas
+          node-version: '20'
 
-      # Instalación de dependencias
       - name: Install dependencies
         run: |
           npm install
 
-      # Instalación de Serverless Framework
       - name: Install Serverless Framework
         run: |
           npm install -g serverless
 
-      # Configurar credenciales AWS
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # Cambia por la región que uses
+          aws-region: us-east-1
 
-      # Despliegue con Serverless Framework
-      - name: Deploy to AWS
+      - name: Deploy to AWS with Serverless
         run: |
           sls deploy
+        env:
+          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
