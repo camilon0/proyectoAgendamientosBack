@@ -1,10 +1,10 @@
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
-const RESERVATIONS_TABLE = process.env.RESERVATIONS_TABLE;
+const ACTIVITIES_TABLE = process.env.ACTIVITIES_TABLE;  // Usamos la tabla de actividades
 
 module.exports.handler = async (event) => {
-  const { activityId } = event.pathParameters; // activityId en la URL
+  const { activityId } = event.pathParameters;  // activityId de la URL
 
   // Validación de activityId
   if (!activityId) {
@@ -14,13 +14,31 @@ module.exports.handler = async (event) => {
     };
   }
 
-  const params = {
-    TableName: RESERVATIONS_TABLE,
-    Key: { activityId }, // El activityId para identificar la actividad
+  // Verificación de si la actividad existe en la tabla 'activities'
+  const getParams = {
+    TableName: ACTIVITIES_TABLE,  // Comprobamos en la tabla de actividades
+    Key: { activityId },  // Usamos el activityId para buscar el ítem
   };
 
   try {
-    await dynamoDb.delete(params).promise();
+    const getResult = await dynamoDb.get(getParams).promise();
+
+    // Si la actividad no existe, devolvemos un error
+    if (!getResult.Item) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Actividad no encontrada.' }),
+      };
+    }
+
+    // Si la actividad existe, procedemos a eliminarla
+    const deleteParams = {
+      TableName: ACTIVITIES_TABLE,
+      Key: { activityId },
+    };
+
+    await dynamoDb.delete(deleteParams).promise();
+    
     return {
       statusCode: 200,
       body: JSON.stringify({ message: 'Actividad eliminada con éxito.' }),
