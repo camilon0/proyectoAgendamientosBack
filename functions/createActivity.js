@@ -5,7 +5,7 @@ const ACTIVITIES_TABLE = process.env.ACTIVITIES_TABLE;
 
 module.exports.handler = async (event) => {
   try {
-    // Verificar si event.body está definido y no es nulo
+    // Verificar si el cuerpo de la solicitud (event.body) está definido
     if (!event.body) {
       return {
         statusCode: 400,
@@ -16,15 +16,27 @@ module.exports.handler = async (event) => {
     }
 
     // Parsear el cuerpo de la solicitud
-    const { activityId, name, description, capacity, reservationDate } =
-      JSON.parse(event.body);
+    let body;
+    try {
+      body = JSON.parse(event.body);
+    } catch (error) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: "El cuerpo de la solicitud no tiene un formato JSON válido.",
+        }),
+      };
+    }
+
+    // Desestructurar los parámetros del cuerpo
+    const { activityId, name, description, capacity, reservationDate } = body;
 
     // Validar campos obligatorios
     if (
       !activityId ||
       !name ||
       !description ||
-      capacity == null ||
+      capacity == null || // Asegurarse de que el valor no sea nulo ni undefined
       !reservationDate
     ) {
       return {
@@ -48,10 +60,10 @@ module.exports.handler = async (event) => {
 
     // Crear el objeto de actividad
     const activity = {
-      activityId, // ID de la actividad
-      name, // Nombre de la actividad
-      description, // Descripción de la actividad
-      reservationDate, // Fecha de reservación
+      activityId: String(activityId), // Asegurarse de que el ID sea un string
+      name: String(name).trim(), // Asegurarse de que el nombre sea un string y eliminar espacios en blanco
+      description: String(description).trim(), // Asegurarse de que la descripción sea un string
+      reservationDate: String(reservationDate).trim(), // Convertir la fecha a string
       totalCapacity: capacity, // Capacidad total inicial
       availableCapacity: capacity, // Capacidad disponible inicialmente
     };
@@ -87,7 +99,10 @@ module.exports.handler = async (event) => {
     console.error("Error creando actividad", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "Error interno del servidor." }),
+      body: JSON.stringify({
+        message: "Error interno del servidor.",
+        error: error.message,
+      }),
     };
   }
 };
