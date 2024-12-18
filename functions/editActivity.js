@@ -5,14 +5,12 @@ const ACTIVITIES_TABLE = process.env.ACTIVITIES_TABLE;
 
 module.exports.handler = async (event) => {
   try {
-    // Log para depuración de la solicitud completa
     console.log("Request event:", JSON.stringify(event, null, 2));
 
-    // Manejo de event.body (puede llegar como string o como objeto)
     let body;
     if (typeof event.body === "string") {
       try {
-        body = JSON.parse(event.body); // Intentar parsear si es una cadena
+        body = JSON.parse(event.body);
       } catch (error) {
         return {
           statusCode: 400,
@@ -23,16 +21,13 @@ module.exports.handler = async (event) => {
         };
       }
     } else {
-      body = event.body; // Usar directamente si ya está parseado
+      body = event.body;
     }
 
-    // Log para depuración del cuerpo de la solicitud
     console.log("Parsed body:", body);
 
-    // Desestructurar los parámetros necesarios
     const { activityId, name, reservationDate, description, capacity } = body;
 
-    // Validar campos obligatorios
     if (
       !activityId ||
       !name ||
@@ -49,7 +44,6 @@ module.exports.handler = async (event) => {
       };
     }
 
-    // Validar que la capacidad sea un número positivo
     if (typeof capacity !== "number" || capacity <= 0) {
       return {
         statusCode: 400,
@@ -59,7 +53,6 @@ module.exports.handler = async (event) => {
       };
     }
 
-    // Validar que la fecha tenga el formato correcto (opcional)
     if (isNaN(Date.parse(reservationDate))) {
       return {
         statusCode: 400,
@@ -69,49 +62,52 @@ module.exports.handler = async (event) => {
       };
     }
 
-    // Crear el objeto de actividad
     const activity = {
-      activityId: String(activityId).trim(), // Asegurarse de que sea una cadena
-      name: String(name).trim(), // Limpiar espacios
-      reservationDate: String(reservationDate).trim(), // Validar formato de fecha
-      description: String(description).trim(), // Limpiar espacios
-      totalCapacity: capacity, // Capacidad total inicial
-      availableCapacity: capacity, // Capacidad disponible inicialmente
+      activityId: String(activityId).trim(),
+      name: String(name).trim(),
+      reservationDate: String(reservationDate).trim(),
+      description: String(description).trim(),
+      totalCapacity: capacity,
+      availableCapacity: capacity,
     };
 
-    // Log para depuración del objeto de actividad
     console.log("Activity object to save:", activity);
 
-    // Parámetros para DynamoDB
+    // Parámetros para DynamoDB (actualizar o crear actividad)
     const params = {
       TableName: ACTIVITIES_TABLE,
-      Item: activity,
-      ConditionExpression: "attribute_not_exists(activityId)", // Prevenir duplicados
+      Key: { activityId: activity.activityId },
+      UpdateExpression:
+        "SET #name = :name, #reservationDate = :reservationDate, #description = :description, #totalCapacity = :totalCapacity, #availableCapacity = :availableCapacity",
+      ExpressionAttributeNames: {
+        "#name": "name",
+        "#reservationDate": "reservationDate",
+        "#description": "description",
+        "#totalCapacity": "totalCapacity",
+        "#availableCapacity": "availableCapacity",
+      },
+      ExpressionAttributeValues: {
+        ":name": activity.name,
+        ":reservationDate": activity.reservationDate,
+        ":description": activity.description,
+        ":totalCapacity": activity.totalCapacity,
+        ":availableCapacity": activity.availableCapacity,
+      },
+      ReturnValues: "ALL_NEW",
     };
 
-    // Insertar actividad en DynamoDB
-    await dynamoDb.put(params).promise();
+    // Realizar operación en DynamoDB
+    const result = await dynamoDb.update(params).promise();
 
     return {
-      statusCode: 201,
+      statusCode: 200,
       body: JSON.stringify({
-        message: "Actividad creada exitosamente.",
-        activity,
+        message: "Actividad creada o actualizada exitosamente.",
+        activity: result.Attributes,
       }),
     };
   } catch (error) {
-    // Manejo de errores específicos
-    if (error.code === "ConditionalCheckFailedException") {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          message: "La actividad ya existe con el mismo activityId.",
-        }),
-      };
-    }
-
-    // Log del error para depuración
-    console.error("Error creando actividad:", error);
+    console.error("Error creando o actualizando actividad:", error);
 
     return {
       statusCode: 500,
