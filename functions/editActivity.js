@@ -5,26 +5,46 @@ const ACTIVITIES_TABLE = process.env.ACTIVITIES_TABLE;
 
 module.exports.handler = async (event) => {
   try {
-    // Verificar si event.body está definido y no es nulo
-    if (!event.body) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          message: "El cuerpo de la solicitud no puede estar vacío.",
-        }),
-      };
+    // Log para depuración de la solicitud completa
+    console.log("Request event:", JSON.stringify(event, null, 2));
+
+    // Manejo de event.body (puede llegar como string o como objeto)
+    let body;
+    if (typeof event.body === "string") {
+      try {
+        body = JSON.parse(event.body); // Intentar parsear si es una cadena
+      } catch (error) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            message:
+              "El cuerpo de la solicitud no tiene un formato JSON válido.",
+          }),
+        };
+      }
+    } else {
+      body = event.body; // Usar directamente si ya está parseado
     }
 
-    // Parsear el cuerpo de la solicitud
-    const { activityId, name, description, capacity } = JSON.parse(event.body);
+    // Log para depuración del cuerpo de la solicitud
+    console.log("Parsed body:", body);
+
+    // Desestructurar los parámetros necesarios
+    const { activityId, name, reservationDate, description, capacity } = body;
 
     // Validar campos obligatorios
-    if (!activityId || !name || !description || capacity == null) {
+    if (
+      !activityId ||
+      !name ||
+      !reservationDate ||
+      !description ||
+      capacity == null
+    ) {
       return {
         statusCode: 400,
         body: JSON.stringify({
           message:
-            "Faltan campos obligatorios: activityId, name, description, capacity.",
+            "Faltan campos obligatorios: activityId, name, reservationDate, description, capacity.",
         }),
       };
     }
@@ -39,14 +59,28 @@ module.exports.handler = async (event) => {
       };
     }
 
+    // Validar que la fecha tenga el formato correcto (opcional)
+    if (isNaN(Date.parse(reservationDate))) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: "La fecha de reservación no tiene un formato válido.",
+        }),
+      };
+    }
+
     // Crear el objeto de actividad
     const activity = {
-      activityId,
-      name,
-      description,
+      activityId: String(activityId).trim(), // Asegurarse de que sea una cadena
+      name: String(name).trim(), // Limpiar espacios
+      reservationDate: String(reservationDate).trim(), // Validar formato de fecha
+      description: String(description).trim(), // Limpiar espacios
       totalCapacity: capacity, // Capacidad total inicial
       availableCapacity: capacity, // Capacidad disponible inicialmente
     };
+
+    // Log para depuración del objeto de actividad
+    console.log("Activity object to save:", activity);
 
     // Parámetros para DynamoDB
     const params = {
@@ -76,10 +110,15 @@ module.exports.handler = async (event) => {
       };
     }
 
-    console.error("Error creando actividad", error);
+    // Log del error para depuración
+    console.error("Error creando actividad:", error);
+
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "Error interno del servidor." }),
+      body: JSON.stringify({
+        message: "Error interno del servidor.",
+        error: error.message,
+      }),
     };
   }
 };
