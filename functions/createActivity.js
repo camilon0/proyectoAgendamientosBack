@@ -24,14 +24,14 @@ module.exports.handler = async (event) => {
       !activityId ||
       !name ||
       !description ||
-      capacity ||
-      !reservationDate == null
+      capacity == null ||
+      !reservationDate
     ) {
       return {
         statusCode: 400,
         body: JSON.stringify({
           message:
-            "Faltan campos obligatorios: activityId, name, description, capacity.",
+            "Faltan campos obligatorios: activityId, name, description, capacity, reservationDate.",
         }),
       };
     }
@@ -48,9 +48,10 @@ module.exports.handler = async (event) => {
 
     // Crear el objeto de actividad
     const activity = {
-      activityId,
-      name,
-      description,
+      activityId, // ID de la actividad
+      name, // Nombre de la actividad
+      description, // Descripción de la actividad
+      reservationDate, // Fecha de reservación
       totalCapacity: capacity, // Capacidad total inicial
       availableCapacity: capacity, // Capacidad disponible inicialmente
     };
