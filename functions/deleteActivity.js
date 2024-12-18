@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
-const RESERVATIONS_TABLE = process.env.RESERVATIONS_TABLE;
+const ACTIVITIES_TABLE = process.env.ACTIVITIES_TABLE; // Usamos la tabla de actividades
 
 module.exports.handler = async (event) => {
   // Manejar solicitudes preflight (OPTIONS) para CORS
@@ -43,9 +43,10 @@ module.exports.handler = async (event) => {
     };
   }
 
-  const params = {
-    TableName: RESERVATIONS_TABLE,
-    Key: { activityId }, // El activityId para identificar la actividad
+  // Verificación de si la actividad existe en la tabla 'activities'
+  const getParams = {
+    TableName: ACTIVITIES_TABLE, // Comprobamos en la tabla de actividades
+    Key: { activityId }, // Usamos el activityId para buscar el ítem
   };
 
   try {

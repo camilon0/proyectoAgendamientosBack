@@ -28,6 +28,14 @@ functions:
           method: post
           cors: true
 
+  showActivity:
+      handler: functions/showActivity.handler
+      events:
+        - http:
+            path: activities/{activityId}
+            method: get
+            cors: true
+
   editActivity:
     handler: functions/editActivity.handler
     events:
