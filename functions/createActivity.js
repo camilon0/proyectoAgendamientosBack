@@ -16,10 +16,17 @@ module.exports.handler = async (event) => {
     }
 
     // Parsear el cuerpo de la solicitud
-    const { activityId, name, description, capacity } = JSON.parse(event.body);
+    const { activityId, name, description, capacity, reservationDate } =
+      JSON.parse(event.body);
 
     // Validar campos obligatorios
-    if (!activityId || !name || !description || capacity == null) {
+    if (
+      !activityId ||
+      !name ||
+      !description ||
+      capacity ||
+      !reservationDate == null
+    ) {
       return {
         statusCode: 400,
         body: JSON.stringify({
