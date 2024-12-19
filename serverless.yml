@@ -7,8 +7,9 @@ provider:
   runtime: nodejs20.x
   region: us-east-1
   environment:
-      ACTIVITIES_TABLE: Activities
-      RESERVATIONS_TABLE: Reservations
+    ACTIVITIES_TABLE: Activities
+    RESERVATIONS_TABLE: Reservations
+    SNS_TOPIC_ARN: arn:aws:sns:us-east-1:590183865524:ReservationNotificationTopic
 
   iamRoleStatements:
     - Effect: Allow
@@ -18,6 +19,11 @@ provider:
         - arn:aws:dynamodb:us-east-1:590183865524:table/Reservations
         - arn:aws:dynamodb:us-east-1:590183865524:table/Activities
         - arn:aws:dynamodb:us-east-1:590183865524:table/Reservations/index/activityId-index
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource:
+        - arn:aws:sns:us-east-1:590183865524:ReservationNotificationTopic
 
 functions:
   createActivity:
@@ -29,12 +35,12 @@ functions:
           cors: true
 
   showActivity:
-      handler: functions/showActivity.handler
-      events:
-        - http:
-            path: activities/{activityId}
-            method: get
-            cors: true
+    handler: functions/showActivity.handler
+    events:
+      - http:
+          path: activities/{activityId}
+          method: get
+          cors: true
 
   editActivity:
     handler: functions/editActivity.handler
@@ -121,3 +127,8 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+
+    ReservationNotificationTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ReservationNotificationTopic

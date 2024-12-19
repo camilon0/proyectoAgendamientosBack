@@ -39,7 +39,7 @@ module.exports.handler = async (event) => {
       activityId,
       reservationDate,
       quantity,
-      status: 'confirmed',
+      status: 'confirmed'
     };
 
     // Parámetros para insertar la reserva en DynamoDB
