@@ -40,3 +40,26 @@ jobs:
           sls deploy
         env:
           SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+
+      - name: Send email notification on failure
+        if: failure()
+        run: |
+          curl -X POST \
+            --url https://api.sendgrid.com/v3/mail/send \
+            -H "Authorization: Bearer ${{ secrets.SENDGRID_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "personalizations": [{
+                "to": [
+                  {"email": "'${{ secrets.TO_EMAIL_1 }}'"},
+                  {"email": "'${{ secrets.TO_EMAIL_2 }}'"},
+                  {"email": "'${{ secrets.TO_EMAIL_3 }}'"}
+                ],
+                "subject": "Fallo el Deploy en GitHub Actions"
+              }],
+              "from": {"email": "'${{ secrets.FROM_EMAIL }}'"},
+              "content": [{
+                "type": "text/html",
+                "value": "<html><body style='font-family: Arial, sans-serif; color: #333;'><h2 style='color: #d9534f;'>¡El flujo de trabajo en GitHub Actions falló!</h2><p>Por favor revisa los detalles en la pestaña de Actions en GitHub para más información.</p><p><strong>Detalles:</strong><br><em>Este correo se ha enviado para notificarte de un fallo en el proceso de despliegue en el Backend en GitHub Actions.</em></p><p><a href='https://github.com/camilon0/proyectoAgendamientosBack/actions' target='_blank' style='color: #0275d8;'>Ver detalles en GitHub Actions</a></p></body></html>"
+              }]
+            }'
