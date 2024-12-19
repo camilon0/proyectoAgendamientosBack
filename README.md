@@ -16,7 +16,37 @@ Esta plantilla demuestra cómo crear una API HTTP simple con Node.js que se ejec
 
 Este ejemplo incluye la integración con DynamoDB para almacenar y recuperar datos. Si buscas ejemplos más avanzados, consulta el [repositorio de ejemplos de Serverless](https://github.com/serverless/examples/), que incluye ejemplos con Typescript y otras bases de datos.
 
-## Uso
+## Instalación de Serverless Framework
+
+Para poder utilizar Serverless Framework, primero necesitas instalarlo en tu máquina. Puedes hacerlo globalmente a través de npm (Node Package Manager).
+
+### Requisitos previos
+
+- **Node.js**: Serverless Framework requiere Node.js. Si no lo tienes instalado, puedes descargarlo desde [aquí](https://nodejs.org/).
+- **npm**: npm se instala automáticamente con Node.js.
+
+### Instalación de Serverless Framework
+
+Una vez que tienes Node.js y npm instalados, puedes instalar Serverless Framework globalmente ejecutando el siguiente comando:
+
+```
+npm install -g serverless
+```
+### Verificación de la instalación
+
+Para verificar que Serverless Framework se ha instalado correctamente, puedes ejecutar:
+
+```
+serverless --version
+```
+
+Este comando debería devolver la versión instalada de Serverless Framework, algo como:
+
+```
+Framework Core: 2.x.x (local) Plugin: 5.x.x SDK: 4.x.x
+```
+
+Ahora estás listo para usar Serverless Framework en tu proyecto.
 
 ### Despliegue
 
