@@ -96,6 +96,7 @@ Y si tu API está configurada para obtener datos de DynamoDB, deberías ver una 
     }
   ]
 }
+- Acá se adjunta el diagrama de infraestructura
 [aws-EasyReserves.pdf](https://github.com/user-attachments/files/18214261/aws-EasyReserves.pdf)
 
 ```
