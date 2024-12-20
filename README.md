@@ -68,6 +68,8 @@ functions:
 ```
 
 _Nota_: En esta forma, después del despliegue, tu API será pública y podrá ser invocada por cualquiera. Para despliegues en producción, es posible que quieras configurar un autenticador. Para obtener detalles sobre cómo hacerlo, consulta la [documentación de eventos HTTP API (API Gateway V2)](https://www.serverless.com/framework/docs/providers/aws/events/http-api).
+- Acá se adjunta el diagrama de infraestructura
+[aws-EasyReserves.pdf](https://github.com/user-attachments/files/18214261/aws-EasyReserves.pdf)
 
 
 ### Invocación
@@ -96,7 +98,6 @@ Y si tu API está configurada para obtener datos de DynamoDB, deberías ver una 
     }
   ]
 }
-- Acá se adjunta el diagrama de infraestructura
-[aws-EasyReserves.pdf](https://github.com/user-attachments/files/18214261/aws-EasyReserves.pdf)
+
 
 ```
