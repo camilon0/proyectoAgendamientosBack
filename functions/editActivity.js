@@ -44,7 +44,7 @@ module.exports.handler = async (event) => {
       };
     }
 
-    if (typeof capacity !== "number" || capacity <= 0) {
+    if (typeof availableCapacity !== "number" || availableCapacity < 0) {
       return {
         statusCode: 400,
         body: JSON.stringify({
