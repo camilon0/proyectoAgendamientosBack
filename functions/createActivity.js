@@ -61,8 +61,7 @@ module.exports.handler = async (event) => {
       name: String(name).trim(),
       description: String(description).trim(),
       reservationDate: String(reservationDate).trim(),
-      //totalCapacity: capacity,
-      availableCapacity: capacity,
+      availableCapacity: capacity
     };
 
     // Parámetros para DynamoDB

@@ -78,19 +78,17 @@ module.exports.handler = async (event) => {
       TableName: ACTIVITIES_TABLE,
       Key: { activityId: activity.activityId },
       UpdateExpression:
-        "SET #name = :name, #reservationDate = :reservationDate, #description = :description, #totalCapacity = :totalCapacity, #availableCapacity = :availableCapacity",
+        "SET #name = :name, #reservationDate = :reservationDate, #description = :description, #availableCapacity = :availableCapacity",
       ExpressionAttributeNames: {
         "#name": "name",
         "#reservationDate": "reservationDate",
         "#description": "description",
-        "#totalCapacity": "totalCapacity",
-        "#availableCapacity": "availableCapacity",
+        "#availableCapacity": "availableCapacity"
       },
       ExpressionAttributeValues: {
         ":name": activity.name,
         ":reservationDate": activity.reservationDate,
         ":description": activity.description,
-        ":totalCapacity": activity.totalCapacity,
         ":availableCapacity": activity.availableCapacity,
       },
       ReturnValues: "ALL_NEW",
