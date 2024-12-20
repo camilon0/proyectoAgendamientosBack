@@ -67,7 +67,7 @@ module.exports.handler = async (event) => {
       name: String(name).trim(),
       reservationDate: String(reservationDate).trim(),
       description: String(description).trim(),
-      //totalCapacity: capacity,
+      totalCapacity: capacity,
       availableCapacity: capacity,
     };
 
