@@ -10,25 +10,14 @@ const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN;
 module.exports.handler = async (event) => {
   try {
     // Parsear el cuerpo del evento
-    const { name, activityId, reservationDate, quantity, email } = JSON.parse(event.body);
+    const { name, activityId, reservationDate, quantity } = JSON.parse(event.body);
 
     // Validar campos obligatorios y valores válidos
-    if (!name || !activityId || !reservationDate || !quantity || quantity <= 0 || !email) {
+    if (!name || !activityId || !reservationDate || !quantity || quantity <= 0) {
       return {
         statusCode: 400,
         body: JSON.stringify({ 
-          message: "Faltan campos obligatorios o la cantidad no es válida (debe ser mayor que 0), o el email es incorrecto." 
-        }),
-      };
-    }
-
-    // Verificar si el email es válido (puedes usar una validación más robusta)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ 
-          message: "El correo electrónico proporcionado no es válido." 
+          message: "Faltan campos obligatorios o la cantidad no es válida (debe ser mayor que 0)." 
         }),
       };
     }
@@ -53,7 +42,6 @@ module.exports.handler = async (event) => {
       reservationDate,
       quantity,
       status: 'confirmed',
-      email,  // Guardar el correo electrónico proporcionado
     };
 
     // Parámetros para insertar la reserva en DynamoDB
