@@ -1,21 +1,34 @@
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const sns = new AWS.SNS();
 const { checkAvailability, updateActivityCapacity } = require('./utils');
 
 const RESERVATIONS_TABLE = process.env.RESERVATIONS_TABLE;
 const ACTIVITIES_TABLE = process.env.ACTIVITIES_TABLE;
+const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN;
 
 module.exports.handler = async (event) => {
   try {
     // Parsear el cuerpo del evento
-    const { name, activityId, reservationDate, quantity } = JSON.parse(event.body);
+    const { name, activityId, reservationDate, quantity, email } = JSON.parse(event.body);
 
     // Validar campos obligatorios y valores válidos
-    if (!name || !activityId || !reservationDate || !quantity || quantity <= 0) {
+    if (!name || !activityId || !reservationDate || !quantity || quantity <= 0 || !email) {
       return {
         statusCode: 400,
         body: JSON.stringify({ 
-          message: "Faltan campos obligatorios o la cantidad no es válida (debe ser mayor que 0)." 
+          message: "Faltan campos obligatorios o la cantidad no es válida (debe ser mayor que 0), o el email es incorrecto." 
+        }),
+      };
+    }
+
+    // Verificar si el email es válido (puedes usar una validación más robusta)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ 
+          message: "El correo electrónico proporcionado no es válido." 
         }),
       };
     }
@@ -39,7 +52,8 @@ module.exports.handler = async (event) => {
       activityId,
       reservationDate,
       quantity,
-      status: 'confirmed'
+      status: 'confirmed',
+      email,  // Guardar el correo electrónico proporcionado
     };
 
     // Parámetros para insertar la reserva en DynamoDB
@@ -51,6 +65,21 @@ module.exports.handler = async (event) => {
     // Guardar la reserva en la tabla y actualizar la capacidad de la actividad
     await dynamoDb.put(params).promise();
     await updateActivityCapacity(activityId, quantity);
+
+    // Crear el mensaje de notificación
+    const message = {
+      subject: `Confirmación de Reserva " ${reservationId}"`,
+      body: `Se ha realizado una reserva para la actividad "${activityId}" en la fecha "${reservationDate}". Número de confirmación: ${reservationId}.`,
+    };
+
+    // Publicar el mensaje en el SNS Topic
+    const snsParams = {
+      Message: JSON.stringify(message),
+      TopicArn: SNS_TOPIC_ARN,
+    };
+
+    // Publicar el mensaje a SNS
+    await sns.publish(snsParams).promise();
 
     // Respuesta exitosa
     return {
