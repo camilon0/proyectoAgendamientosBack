@@ -26,27 +26,27 @@ module.exports.handler = async (event) => {
     }
 
     // Desestructurar los parámetros
-    const { activityId, name, description, capacity, reservationDate } = body;
+    const { activityId, name, description, availableCapacity, reservationDate } = body;
 
     // Validar campos obligatorios
     if (
       !activityId ||
       !name ||
       !description ||
-      capacity == null ||
+      availableCapacity == null ||
       !reservationDate
     ) {
       return {
         statusCode: 400,
         body: JSON.stringify({
           message:
-            "Faltan campos obligatorios: activityId, name, description, capacity, reservationDate.",
+            "Faltan campos obligatorios: activityId, name, description, availableCapacity, reservationDate.",
         }),
       };
     }
 
     // Validar que la capacidad sea un número positivo
-    if (typeof capacity !== "number" || capacity <= 0) {
+    if (typeof availableCapacity !== "number" || availableCapacity <= 0) {
       return {
         statusCode: 400,
         body: JSON.stringify({
