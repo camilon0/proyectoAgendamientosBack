@@ -38,6 +38,23 @@ module.exports.handler = async (event) => {
       };
     }
 
+    // Consultar la actividad por ID
+    const activityParams = {
+      TableName: ACTIVITIES_TABLE,
+      Key: { activityId },
+    };
+
+    const activityResult = await dynamoDb.get(activityParams).promise();
+
+    if (!activityResult.Item) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: "La actividad no fue encontrada." }),
+      };
+    }
+
+    const activity = activityResult.Item;
+
     const reservationId = `RES-${Date.now()}`;
     const reservation = {
       reservationId,
@@ -56,25 +73,27 @@ module.exports.handler = async (event) => {
     await dynamoDb.put(params).promise();
     await updateActivityCapacity(activityId, parsedQuantity);
 
+    // Crear el mensaje con la información de la actividad
     const textMessage = `
     Confirmación de Reserva
     =======================
     ¡Gracias por tu reserva!
-    Nombre: ${name}
-    Actividad: ${activityId}
+    Correo: ${name}
+    Actividad: ${activity.name}
+    Descripción: ${activity.description}
     Fecha de la Reserva: ${reservationDate}
     Cantidad: ${parsedQuantity}
     Número de Confirmación: ${reservationId}
     
     Si tienes alguna duda, no dudes en contactarnos.
   `;
-  
-  const snsParams = {
-    Message: textMessage,
-    TopicArn: SNS_TOPIC_ARN,
-  };
-  
-  await sns.publish(snsParams).promise();
+
+    const snsParams = {
+      Message: textMessage,
+      TopicArn: SNS_TOPIC_ARN,
+    };
+
+    await sns.publish(snsParams).promise();
 
     return {
       statusCode: 201,
