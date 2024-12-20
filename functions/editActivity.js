@@ -26,20 +26,20 @@ module.exports.handler = async (event) => {
 
     console.log("Parsed body:", body);
 
-    const { activityId, name, reservationDate, description, capacity } = body;
+    const { activityId, name, reservationDate, description, availableCapacity } = body;
 
     if (
       !activityId ||
       !name ||
       !reservationDate ||
       !description ||
-      capacity == null
+      availableCapacity == null
     ) {
       return {
         statusCode: 400,
         body: JSON.stringify({
           message:
-            "Faltan campos obligatorios: activityId, name, reservationDate, description, capacity.",
+            "Faltan campos obligatorios: activityId, name, reservationDate, description, availableCapacity.",
         }),
       };
     }
@@ -67,7 +67,7 @@ module.exports.handler = async (event) => {
       name: String(name).trim(),
       reservationDate: String(reservationDate).trim(),
       description: String(description).trim(),
-      availableCapacity: capacity
+      availableCapacity: availableCapacity
     };
 
     console.log("Activity object to save:", activity);
